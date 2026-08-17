@@ -1,0 +1,537 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * NutriLens — Aurora Ocean design system.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-hero-from: var(--hero-from);
+  --color-hero-to: var(--hero-to);
+  --color-protein: var(--protein);
+  --color-carbs: var(--carbs);
+  --color-fat: var(--fat);
+  --color-fiber: var(--fiber);
+  --color-sugar: var(--sugar);
+  --color-water: var(--water);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --radius: 1.25rem;
+  --background: oklch(0.99 0.003 120);
+  --foreground: oklch(0.18 0.02 160);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 160);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 160);
+  --primary: #29d769;
+  --primary-foreground: #07120d;
+  --secondary: oklch(0.96 0.012 160);
+  --secondary-foreground: oklch(0.22 0.03 160);
+  --muted: oklch(0.96 0.008 160);
+  --muted-foreground: oklch(0.5 0.02 160);
+  --accent: oklch(0.94 0.04 165);
+  --accent-foreground: oklch(0.22 0.05 165);
+  --destructive: oklch(0.6 0.21 25);
+  --destructive-foreground: oklch(0.99 0.005 160);
+  --success: #3dff8a;
+  --warning: oklch(0.78 0.14 75);
+  --border: oklch(0.92 0.008 160);
+  --input: oklch(0.92 0.008 160);
+  --ring: #3dff8a;
+
+  /* Hero gradient */
+  --hero-from: #0c1722;
+  --hero-to: #071018;
+
+  /* Macro ring colors */
+  --protein: #38bdf8;
+  --carbs: #34d399;
+  --fat: #fbbf24;
+  --fiber: #818cf8;
+  --sugar: #f43f5e;
+  --water: #38bdf8;
+
+  --sidebar: oklch(0.985 0.003 160);
+  --sidebar-foreground: oklch(0.22 0.02 160);
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #071018;
+  --sidebar-accent: oklch(0.94 0.012 160);
+  --sidebar-accent-foreground: oklch(0.22 0.03 160);
+  --sidebar-border: oklch(0.92 0.008 160);
+  --sidebar-ring: #38bdf8;
+}
+
+.dark {
+  /* NutriLens AI Modern Ocean Cyan/Emerald Theme (Profile / Pro Style) */
+  --background: #071018;
+  --foreground: #ffffff;
+  --card: #0c1722;
+  --card-foreground: #ffffff;
+  --popover: #0c1722;
+  --popover-foreground: #ffffff;
+  --primary: #38bdf8;
+  --primary-foreground: #071018;
+  --secondary: #0f2130;
+  --secondary-foreground: #e2e8f0;
+  --muted: #142838;
+  --muted-foreground: #94a3b8;
+  --accent: #142838;
+  --accent-foreground: #38bdf8;
+  --destructive: #ff4d4d;
+  --destructive-foreground: #ffffff;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #38bdf8;
+
+  --hero-from: #0c1722;
+  --hero-to: #071018;
+
+  --protein: #38bdf8;
+  --carbs: #34d399;
+  --fat: #fbbf24;
+  --fiber: #818cf8;
+  --sugar: #f43f5e;
+  --water: #38bdf8;
+
+  --sidebar: #0c1722;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #071018;
+  --sidebar-accent: #0f2130;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #38bdf8;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01", "ss03";
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@utility hero-gradient {
+  background: var(--hero-from, #ffffff);
+
+  .dark & {
+    background: linear-gradient(135deg, #0c1722 0%, #071018 100%);
+  }
+}
+
+@utility glass-card {
+  background: var(--card, rgba(255, 255, 255, 0.9));
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+  .dark & {
+    background: rgba(12, 23, 34, 0.85);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@utility glass-card-elevated {
+  background: var(--card, #ffffff);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.12));
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.08);
+
+  .dark & {
+    background: rgba(15, 30, 44, 0.9);
+    backdrop-filter: blur(20px) saturate(200%);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    box-shadow:
+      0 14px 35px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(56, 189, 248, 0.15);
+  }
+}
+
+@utility glass-pill {
+  background: var(--muted, rgba(240, 240, 240, 0.8));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+
+  .dark & {
+    background: rgba(15, 30, 44, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+@utility emerald-glow {
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+}
+
+@utility emerald-glow-sm {
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+@utility btn-primary-gradient {
+  background: linear-gradient(135deg, #38bdf8 0%, #34d399 100%);
+  color: #071018;
+  font-weight: 800;
+  transition: all 180ms ease;
+
+  &:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.45);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Keyframe Animations */
+@keyframes ambientBreathing {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1) translate(0px, 0px);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.1) translate(-15px, 15px);
+  }
+}
+
+@keyframes floatParticleSlow {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(0.9);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translateY(-30px) translateX(15px) scale(1.2);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(0px) translateX(0px) scale(0.9);
+    opacity: 0.1;
+  }
+}
+
+@keyframes leafParallaxMovement {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1) translate(0px, 0px);
+    opacity: 0.03;
+  }
+  50% {
+    transform: rotate(3deg) scale(1.05) translate(8px, -6px);
+    opacity: 0.05;
+  }
+}
+
+@keyframes cameraPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes scannerPulseGlow {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes laserSweepLine {
+  0% {
+    top: 5%;
+    opacity: 0.2;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.2;
+  }
+}
+
+@keyframes waterBounceFill {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  30% {
+    transform: scale(1.25) translateY(-6px);
+  }
+  60% {
+    transform: scale(0.92) translateY(2px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-ambient-breathing {
+  animation: ambientBreathing 14s infinite ease-in-out;
+}
+
+.animate-float-particle {
+  animation: floatParticleSlow 16s infinite ease-in-out;
+}
+
+.animate-leaf-parallax {
+  animation: leafParallaxMovement 18s infinite ease-in-out;
+}
+
+.animate-camera-pulse {
+  animation: cameraPulse 2.5s infinite ease-in-out;
+}
+
+.animate-scanner-glow {
+  animation: scannerPulseGlow 2s infinite ease-in-out;
+}
+
+.animate-laser-sweep {
+  animation: laserSweepLine 2.2s ease-in-out infinite;
+}
+
+.animate-water-bounce {
+  animation: waterBounceFill 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* NutriLens — Aurora Ocean Design System Classes */
+.aurora-bg {
+  background-color: #071018;
+  position: relative;
+  overflow: hidden;
+}
+
+.aurora-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.aurora-mesh-blob-1 {
+  position: absolute;
+  top: -80px;
+  left: -80px;
+  width: 280px;
+  height: 280px;
+  border-radius: 9999px;
+  background: #0ea5e9;
+  filter: blur(40px);
+  opacity: 0.35;
+}
+
+.aurora-mesh-blob-2 {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 280px;
+  height: 280px;
+  border-radius: 9999px;
+  background: #10b981;
+  filter: blur(40px);
+  opacity: 0.35;
+}
+
+.aurora-mesh-blob-3 {
+  position: absolute;
+  bottom: -80px;
+  left: -80px;
+  width: 280px;
+  height: 280px;
+  border-radius: 9999px;
+  background: #6366f1;
+  filter: blur(40px);
+  opacity: 0.3;
+}
+
+.aurora-mesh-blob-4 {
+  position: absolute;
+  bottom: -80px;
+  right: -80px;
+  width: 280px;
+  height: 280px;
+  border-radius: 9999px;
+  background: #14b8a6;
+  filter: blur(40px);
+  opacity: 0.3;
+}
+
+.aurora-glass-card {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 22px;
+}
+
+.aurora-glass-card-dashed {
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 22px;
+}
+
+.aurora-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.aurora-headline {
+  font-size: 25px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.aurora-gradient-text {
+  background: linear-gradient(90deg, #38bdf8 0%, #34d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.aurora-btn-primary {
+  background: linear-gradient(90deg, #38bdf8 0%, #34d399 100%);
+  color: #071018;
+  font-weight: 800;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.aurora-btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
+}
+
+.aurora-btn-primary:active {
+  transform: scale(0.96);
+}
+
+.aurora-badge-pro {
+  background: linear-gradient(90deg, #6ee7b7 0%, #34d399 100%);
+  color: #071018;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.aurora-phone-frame {
+  width: 100%;
+  max-width: 390px;
+  border: 10px solid #000;
+  border-radius: 44px;
+  background: #071018;
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.85),
+    0 0 40px rgba(14, 165, 233, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.aurora-notch {
+  width: 120px;
+  height: 26px;
+  background: #000;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+}
+
+/* Dedicated Tablet Responsive Layout Rules (768px - 1199px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .tablet-grid-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .tablet-grid-3 {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .tablet-flex-wrap {
+    flex-wrap: wrap !important;
+  }
+  .tablet-container-fit {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}

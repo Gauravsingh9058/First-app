@@ -1,0 +1,4 @@
+include ':app'
+rootProject.name = 'NutriLens AI'
+
+apply from: 'capacitor.settings.gradle'

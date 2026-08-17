@@ -1,0 +1,6 @@
+{
+  "name": "NutriLens",
+  "description": "AI-powered nutrition and meal tracking assistant",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
