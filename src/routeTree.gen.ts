@@ -9,66 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiScanRouteImport } from './routes/api/scan'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
-import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
-import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated/manual'
-import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
-import { Route as AuthenticatedCoachRouteImport } from './routes/_authenticated/coach'
-import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated/manual'
+import { Route as AuthenticatedMealsRouteImport } from './routes/_authenticated/meals'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
+import { Route as ApiAnalyzeIngredientsRouteImport } from './routes/api/analyze-ingredients'
+import { Route as ApiBarcodeRouteImport } from './routes/api/barcode'
+import { Route as ApiGenerateMealRouteImport } from './routes/api/generate-meal'
+import { Route as ApiScanRouteImport } from './routes/api/scan'
 
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiScanRoute = ApiScanRouteImport.update({
-  id: '/api/scan',
-  path: '/api/scan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
-  id: '/scan',
-  path: '/scan',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedManualRoute = AuthenticatedManualRouteImport.update({
-  id: '/manual',
-  path: '/manual',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCoachRoute = AuthenticatedCoachRouteImport.update({
-  id: '/coach',
-  path: '/coach',
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
@@ -76,10 +48,50 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedManualRoute = AuthenticatedManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMealsRoute = AuthenticatedMealsRouteImport.update({
+  id: '/meals',
+  path: '/meals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiAnalyzeIngredientsRoute = ApiAnalyzeIngredientsRouteImport.update({
+  id: '/api/analyze-ingredients',
+  path: '/api/analyze-ingredients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBarcodeRoute = ApiBarcodeRouteImport.update({
+  id: '/api/barcode',
+  path: '/api/barcode',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateMealRoute = ApiGenerateMealRouteImport.update({
+  id: '/api/generate-meal',
+  path: '/api/generate-meal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiScanRoute = ApiScanRouteImport.update({
+  id: '/api/scan',
+  path: '/api/scan',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -87,12 +99,14 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
-  '/coach': typeof AuthenticatedCoachRoute
   '/home': typeof AuthenticatedHomeRoute
   '/manual': typeof AuthenticatedManualRoute
+  '/meals': typeof AuthenticatedMealsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/scan': typeof AuthenticatedScanRoute
-  '/api/chat': typeof ApiChatRoute
+  '/api/analyze-ingredients': typeof ApiAnalyzeIngredientsRoute
+  '/api/barcode': typeof ApiBarcodeRoute
+  '/api/generate-meal': typeof ApiGenerateMealRoute
   '/api/scan': typeof ApiScanRoute
 }
 export interface FileRoutesByTo {
@@ -100,12 +114,14 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
-  '/coach': typeof AuthenticatedCoachRoute
   '/home': typeof AuthenticatedHomeRoute
   '/manual': typeof AuthenticatedManualRoute
+  '/meals': typeof AuthenticatedMealsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/scan': typeof AuthenticatedScanRoute
-  '/api/chat': typeof ApiChatRoute
+  '/api/analyze-ingredients': typeof ApiAnalyzeIngredientsRoute
+  '/api/barcode': typeof ApiBarcodeRoute
+  '/api/generate-meal': typeof ApiGenerateMealRoute
   '/api/scan': typeof ApiScanRoute
 }
 export interface FileRoutesById {
@@ -115,12 +131,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
-  '/_authenticated/coach': typeof AuthenticatedCoachRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/manual': typeof AuthenticatedManualRoute
+  '/_authenticated/meals': typeof AuthenticatedMealsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
-  '/api/chat': typeof ApiChatRoute
+  '/api/analyze-ingredients': typeof ApiAnalyzeIngredientsRoute
+  '/api/barcode': typeof ApiBarcodeRoute
+  '/api/generate-meal': typeof ApiGenerateMealRoute
   '/api/scan': typeof ApiScanRoute
 }
 export interface FileRouteTypes {
@@ -130,12 +148,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/analytics'
     | '/calendar'
-    | '/coach'
     | '/home'
     | '/manual'
+    | '/meals'
     | '/onboarding'
     | '/scan'
-    | '/api/chat'
+    | '/api/analyze-ingredients'
+    | '/api/barcode'
+    | '/api/generate-meal'
     | '/api/scan'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,12 +163,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/analytics'
     | '/calendar'
-    | '/coach'
     | '/home'
     | '/manual'
+    | '/meals'
     | '/onboarding'
     | '/scan'
-    | '/api/chat'
+    | '/api/analyze-ingredients'
+    | '/api/barcode'
+    | '/api/generate-meal'
     | '/api/scan'
   id:
     | '__root__'
@@ -157,12 +179,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/analytics'
     | '/_authenticated/calendar'
-    | '/_authenticated/coach'
     | '/_authenticated/home'
     | '/_authenticated/manual'
+    | '/_authenticated/meals'
     | '/_authenticated/onboarding'
     | '/_authenticated/scan'
-    | '/api/chat'
+    | '/api/analyze-ingredients'
+    | '/api/barcode'
+    | '/api/generate-meal'
     | '/api/scan'
   fileRoutesById: FileRoutesById
 }
@@ -170,17 +194,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ApiChatRoute: typeof ApiChatRoute
+  ApiAnalyzeIngredientsRoute: typeof ApiAnalyzeIngredientsRoute
+  ApiBarcodeRoute: typeof ApiBarcodeRoute
+  ApiGenerateMealRoute: typeof ApiGenerateMealRoute
   ApiScanRoute: typeof ApiScanRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -190,60 +216,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/scan': {
-      id: '/api/scan'
-      path: '/api/scan'
-      fullPath: '/api/scan'
-      preLoaderRoute: typeof ApiScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/scan': {
-      id: '/_authenticated/scan'
-      path: '/scan'
-      fullPath: '/scan'
-      preLoaderRoute: typeof AuthenticatedScanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/onboarding': {
-      id: '/_authenticated/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/manual': {
-      id: '/_authenticated/manual'
-      path: '/manual'
-      fullPath: '/manual'
-      preLoaderRoute: typeof AuthenticatedManualRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/home': {
-      id: '/_authenticated/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AuthenticatedHomeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/coach': {
-      id: '/_authenticated/coach'
-      path: '/coach'
-      fullPath: '/coach'
-      preLoaderRoute: typeof AuthenticatedCoachRouteImport
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendar': {
@@ -253,12 +237,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/analytics': {
-      id: '/_authenticated/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/manual': {
+      id: '/_authenticated/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof AuthenticatedManualRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/meals': {
+      id: '/_authenticated/meals'
+      path: '/meals'
+      fullPath: '/meals'
+      preLoaderRoute: typeof AuthenticatedMealsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/scan': {
+      id: '/_authenticated/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof AuthenticatedScanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/analyze-ingredients': {
+      id: '/api/analyze-ingredients'
+      path: '/api/analyze-ingredients'
+      fullPath: '/api/analyze-ingredients'
+      preLoaderRoute: typeof ApiAnalyzeIngredientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/barcode': {
+      id: '/api/barcode'
+      path: '/api/barcode'
+      fullPath: '/api/barcode'
+      preLoaderRoute: typeof ApiBarcodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate-meal': {
+      id: '/api/generate-meal'
+      path: '/api/generate-meal'
+      fullPath: '/api/generate-meal'
+      preLoaderRoute: typeof ApiGenerateMealRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/scan': {
+      id: '/api/scan'
+      path: '/api/scan'
+      fullPath: '/api/scan'
+      preLoaderRoute: typeof ApiScanRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -266,9 +306,9 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
-  AuthenticatedCoachRoute: typeof AuthenticatedCoachRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedManualRoute: typeof AuthenticatedManualRoute
+  AuthenticatedMealsRoute: typeof AuthenticatedMealsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
 }
@@ -276,9 +316,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
-  AuthenticatedCoachRoute: AuthenticatedCoachRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedManualRoute: AuthenticatedManualRoute,
+  AuthenticatedMealsRoute: AuthenticatedMealsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedScanRoute: AuthenticatedScanRoute,
 }
@@ -290,7 +330,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  ApiChatRoute: ApiChatRoute,
+  ApiAnalyzeIngredientsRoute: ApiAnalyzeIngredientsRoute,
+  ApiBarcodeRoute: ApiBarcodeRoute,
+  ApiGenerateMealRoute: ApiGenerateMealRoute,
   ApiScanRoute: ApiScanRoute,
 }
 export const routeTree = rootRouteImport
