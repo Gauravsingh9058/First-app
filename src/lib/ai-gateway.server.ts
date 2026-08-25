@@ -91,7 +91,10 @@ export function getGeminiApiKey(): string | null {
             }
           }
         } else {
-          const match = content.match(/^GEMINI_API_KEY=(.*)$/m);
+          // Accept conventional .env spacing as well as a compact assignment.
+          // This keeps server-only AI routes working when the key is entered as
+          // `GEMINI_API_KEY = "..."` in local project settings.
+          const match = content.match(/^\s*GEMINI_API_KEY\s*=\s*(.*)$/m);
           if (match && match[1]) {
             const val = match[1].trim().replace(/^["']|["']$/g, "");
             if (val && !val.startsWith("MY_GEMINI_") && val !== "your_api_key_here") {
