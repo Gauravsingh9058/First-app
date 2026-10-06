@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSyncQueueFromSQLite, removeSyncQueueItemFromSQLite, getSQLiteDB } from "./sqlite-db";
+import { Database } from "@/integrations/supabase/types";
 
 export const NUTRILENS_DATA_CHANGED_EVENT = "nutrilens-data-changed";
 export const NUTRILENS_SYNC_STATUS_EVENT = "nutrilens-sync-status";
@@ -76,7 +77,7 @@ export async function processSyncQueue(): Promise<void> {
                     : (meal.id as string),
                 user_id: userId,
                 name: String(meal.name || ""),
-                source: (meal.source as string) || "manual",
+                source: (meal.source as "manual" | "photo" | "barcode" | undefined) || "manual",
                 confidence: meal.confidence ? Number(meal.confidence) : null,
                 serving_desc: meal.serving_desc ? String(meal.serving_desc) : null,
                 calories: Number(meal.calories || 0),
@@ -106,9 +107,10 @@ export async function processSyncQueue(): Promise<void> {
               height_cm: Number(prof.height_cm || 170),
               weight_kg: Number(prof.weight_kg || 70),
               goal_weight_kg: Number(prof.goal_weight_kg || 70),
-              activity: String(prof.activity || "moderate"),
-              goal: String(prof.goal || "maintain"),
-              diet: String(prof.diet || "non_veg"),
+              activity:
+                (prof.activity as Database["public"]["Enums"]["activity_level"]) || "moderate",
+              goal: (prof.goal as Database["public"]["Enums"]["goal_type"]) || "maintenance",
+              diet: (prof.diet as Database["public"]["Enums"]["diet_type"]) || "non_veg",
               daily_calorie_target: Number(prof.daily_calorie_target || 2000),
               protein_target_g: Number(prof.protein_target_g || 120),
               water_target_glasses: Number(prof.water_target_glasses || 8),

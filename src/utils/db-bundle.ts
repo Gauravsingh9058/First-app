@@ -1,1 +1,1 @@
-export * from "@/lib/copy-recipes-db";
+export * from "@/lib/recipe-db";

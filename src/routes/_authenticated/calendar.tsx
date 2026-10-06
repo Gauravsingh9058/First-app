@@ -76,7 +76,7 @@ export function CalendarPage() {
     enabled: !!selectedDateStr,
   });
 
-  // Combine server calendar data with local meals, water, and step history
+  // Combine server calendar data with local meals, water, and step history without double counting
   const aggregatedMap = useMemo(() => {
     const map = new Map<
       string,
@@ -136,50 +136,38 @@ export function CalendarPage() {
     for (const m of localMeals) {
       const dKey = m.eaten_on || (m.eaten_at ? getLocalDateString(new Date(m.eaten_at)) : "");
       if (!dKey) continue;
-      const existing = map.get(dKey) || {
-        calories: 0,
-        protein_g: 0,
-        carbs_g: 0,
-        fat_g: 0,
-        fiber_g: 0,
-        sugar_g: 0,
-        sodium_mg: 0,
-        iron_mg: 0,
-        calcium_mg: 0,
-        magnesium_mg: 0,
-        potassium_mg: 0,
-        vit_a_ug: 0,
-        vit_b12_ug: 0,
-        vit_d_ug: 0,
-        omega3_g: 0,
-        water_glasses: 0,
-        steps: 0,
-        meal_count: 0,
-        score: 0,
-        meals: [],
-      };
+      const existing = map.get(dKey);
 
-      if (!existing.meals.some((x) => x.id === m.id)) {
-        existing.meals.push(m);
-        existing.calories += Number(m.calories || 0);
-        existing.protein_g += Number(m.protein_g || 0);
-        existing.carbs_g += Number(m.carbs_g || 0);
-        existing.fat_g += Number(m.fat_g || 0);
-        existing.fiber_g += Number(m.fiber_g || 0);
-        existing.sugar_g += Number(m.sugar_g || 0);
-        existing.sodium_mg += Number(m.sodium_mg || 0);
-        existing.iron_mg += Number(m.iron_mg || 0);
-        existing.calcium_mg += Number(m.calcium_mg || 0);
-        existing.magnesium_mg += Number(m.magnesium_mg || 0);
-        existing.potassium_mg += Number(m.potassium_mg || 0);
-        existing.vit_a_ug += Number(m.vit_a_ug || 0);
-        existing.vit_b12_ug += Number(m.vit_b12_ug || 0);
-        existing.vit_d_ug += Number(m.vit_d_ug || 0);
-        existing.omega3_g += Number(m.omega3_g || 0);
-        existing.meal_count = Math.max(existing.meal_count, existing.meals.length);
+      if (!existing) {
+        // Date was not in server rollup, use local summary
+        const summary = LocalStore.getDailySummary(dKey);
+        map.set(dKey, {
+          calories: summary.calories,
+          protein_g: summary.protein_g,
+          carbs_g: summary.carbs_g,
+          fat_g: summary.fat_g,
+          fiber_g: summary.fiber_g,
+          sugar_g: summary.sugar_g,
+          sodium_mg: summary.sodium_mg,
+          iron_mg: summary.iron_mg,
+          calcium_mg: summary.calcium_mg,
+          magnesium_mg: summary.magnesium_mg,
+          potassium_mg: summary.potassium_mg,
+          vit_a_ug: summary.vit_a_ug,
+          vit_b12_ug: summary.vit_b12_ug,
+          vit_d_ug: summary.vit_d_ug,
+          omega3_g: summary.omega3_g,
+          water_glasses: summary.water_glasses,
+          steps: summary.steps,
+          meal_count: summary.meal_count,
+          score: summary.score,
+          meals: summary.meals,
+        });
+      } else {
+        if (!existing.meals.some((x) => x.id === m.id)) {
+          existing.meals.push(m);
+        }
       }
-
-      map.set(dKey, existing);
     }
 
     void localVersion;

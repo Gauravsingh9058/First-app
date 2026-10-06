@@ -1,5 +1,6 @@
 import type { Database } from "sql.js";
 import { LocalMeal, LocalProfile } from "./local-store";
+export type { LocalMeal, LocalProfile };
 
 const SQLITE_STORAGE_KEY = "nutrilens_sqlite_db_v1";
 
@@ -123,7 +124,8 @@ export async function getSQLiteDB(): Promise<Database | null> {
         return null;
       }
 
-      let SQL;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let SQL: any;
 
       // Strategy 1: Load WASM binary as ArrayBuffer (most reliable across CORS/bundlers)
       const wasmBinary = await loadWasmBinary();
@@ -135,32 +137,35 @@ export async function getSQLiteDB(): Promise<Database | null> {
         }
       }
 
-      // Strategy 2: Fallback to locateFile with imported bundler asset URL
+      // Strategy 2: Fallback to locateFile with CDN URLs
       if (!SQL) {
         try {
           SQL = await initFunc({
-            locateFile: () => sqlWasmUrl,
+            locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${file}`,
           });
         } catch (urlErr) {
-          console.warn("[SQLite] initFunc with sqlWasmUrl failed:", urlErr);
+          console.warn("[SQLite] initFunc with locateFile failed:", urlErr);
           try {
             SQL = await initFunc({
-              locateFile: (file) => `https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/${file}`,
+              locateFile: (file: string) => `https://unpkg.com/sql.js@1.14.1/dist/${file}`,
             });
           } catch (cdnErr) {
             console.warn("[SQLite] CDN WASM init failed, trying unpkg:", cdnErr);
-            SQL = await initFunc({
-              locateFile: (file) => `https://unpkg.com/sql.js@1.14.1/dist/${file}`,
-            });
           }
         }
       }
 
-      let db = loadPersistedDatabase(SQL);
+      if (!SQL) {
+        return null;
+      }
+
+      let db: Database | null = loadPersistedDatabase(SQL);
 
       if (!db) {
         db = new SQL.Database();
       }
+
+      if (!db) return null;
 
       // Initialize Tables Schema
       db.run(`

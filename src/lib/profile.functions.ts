@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getLocalDateString } from "./date-utils";
+import { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
 
 export const getProfile = createServerFn({ method: "POST" })
@@ -78,22 +80,38 @@ export const saveOnboarding = createServerFn({ method: "POST" })
       data.weight_kg * (data.goal === "muscle_gain" || data.goal === "lean_bulk" ? 2.0 : 1.6),
     );
 
+    const extendedData =
+      data.extended_data && typeof data.extended_data === "object" ? data.extended_data : {};
+
+    const waterGoalL =
+      typeof (extendedData as Record<string, unknown>)?.water_goal_l === "number"
+        ? Number((extendedData as Record<string, unknown>).water_goal_l)
+        : 3.5;
+
     try {
-      const { error } = await supabase.from("profiles").upsert({
-        user_id: userId,
-        display_name: data.display_name,
-        gender: data.gender ?? null,
-        age: data.age,
-        height_cm: data.height_cm,
-        weight_kg: data.weight_kg,
-        goal_weight_kg: data.goal_weight_kg,
-        activity: data.activity,
-        goal: data.goal,
-        diet: data.diet,
-        daily_calorie_target: calorieTarget,
-        protein_target_g: proteinTarget,
-        onboarded: true,
-      });
+      const { error } = await supabase.from("profiles").upsert(
+        {
+          user_id: userId,
+          display_name: data.display_name,
+          gender: data.gender ?? null,
+          age: data.age,
+          height_cm: data.height_cm,
+          weight_kg: data.weight_kg,
+          goal_weight_kg: data.goal_weight_kg,
+          activity: data.activity,
+          goal: data.goal,
+          diet: data.diet,
+          daily_calorie_target: calorieTarget,
+          protein_target_g: proteinTarget,
+          water_target_glasses: 8,
+          water_goal_l: waterGoalL,
+          extended_data: extendedData,
+          onboarded: true,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+
       if (
         error &&
         (error.message.includes("schema cache") ||
@@ -106,19 +124,21 @@ export const saveOnboarding = createServerFn({ method: "POST" })
         console.warn("[saveOnboarding] profile upsert note:", error.message);
       }
 
-      // Try replacing flags if table exists
+      // Replace medical flags if table exists
       try {
         await supabase.from("user_medical_flags").delete().eq("user_id", userId);
         if (data.flags.length > 0) {
-          const validFlags = data.flags.filter((f) =>
-            [
-              "diabetes",
-              "pcos",
-              "hypertension",
-              "fatty_liver",
-              "kidney_disease",
-              "food_allergy",
-            ].includes(f),
+          const allowedFlags = [
+            "diabetes",
+            "pcos",
+            "hypertension",
+            "fatty_liver",
+            "kidney_disease",
+            "food_allergy",
+          ] as const;
+          type MedicalFlag = (typeof allowedFlags)[number];
+          const validFlags = data.flags.filter((f): f is MedicalFlag =>
+            allowedFlags.includes(f as MedicalFlag),
           );
           if (validFlags.length > 0) {
             await supabase
@@ -144,22 +164,35 @@ export const updateProfile = createServerFn({ method: "POST" })
         water_target_glasses: z.number().optional(),
         daily_calorie_target: z.number().optional(),
         protein_target_g: z.number().optional(),
+        extended_data: z.any().optional(),
+        display_name: z.string().optional(),
+        weight_kg: z.number().optional(),
+        goal_weight_kg: z.number().optional(),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     try {
-      const updates: Record<string, unknown> = {};
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
       if (data.water_goal_l !== undefined) updates.water_goal_l = data.water_goal_l;
       if (data.water_target_glasses !== undefined)
         updates.water_target_glasses = data.water_target_glasses;
       if (data.daily_calorie_target !== undefined)
         updates.daily_calorie_target = data.daily_calorie_target;
       if (data.protein_target_g !== undefined) updates.protein_target_g = data.protein_target_g;
+      if (data.extended_data !== undefined) updates.extended_data = data.extended_data;
+      if (data.display_name !== undefined) updates.display_name = data.display_name;
+      if (data.weight_kg !== undefined) updates.weight_kg = data.weight_kg;
+      if (data.goal_weight_kg !== undefined) updates.goal_weight_kg = data.goal_weight_kg;
 
       if (Object.keys(updates).length > 0) {
-        await supabase.from("profiles").update(updates).eq("user_id", userId);
+        await supabase
+          .from("profiles")
+          .update(updates as Database["public"]["Tables"]["profiles"]["Update"])
+          .eq("user_id", userId);
       }
       return { ok: true };
     } catch {
@@ -175,7 +208,7 @@ export const addWater = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const day = data.day || new Date().toISOString().slice(0, 10);
+    const day = data.day || getLocalDateString();
     try {
       const { error } = await context.supabase
         .from("water_logs")
@@ -195,15 +228,52 @@ export const logWeight = createServerFn({ method: "POST" })
     z.object({ weight_kg: z.number().min(25).max(400), day: z.string().optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const day = data.day || new Date().toISOString().slice(0, 10);
+    const day = data.day || getLocalDateString();
     try {
       await context.supabase
         .from("weights")
         .insert({ user_id: context.userId, weight_kg: data.weight_kg, day });
       await context.supabase
         .from("profiles")
-        .update({ weight_kg: data.weight_kg })
+        .update({ weight_kg: data.weight_kg, updated_at: new Date().toISOString() })
         .eq("user_id", context.userId);
+      return { ok: true, localFallback: false };
+    } catch {
+      return { ok: true, localFallback: true };
+    }
+  });
+
+export const logSteps = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        steps: z.number().int().min(0).max(200000),
+        day: z.string().optional(),
+        distance_km: z.number().optional(),
+        calories_burned: z.number().optional(),
+        active_minutes: z.number().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const day = data.day || getLocalDateString();
+    try {
+      const { error } = await context.supabase.from("step_logs").upsert(
+        {
+          user_id: context.userId,
+          day,
+          steps: data.steps,
+          distance_km: data.distance_km || 0,
+          calories_burned: data.calories_burned || 0,
+          active_minutes: data.active_minutes || 0,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,day" },
+      );
+      if (error) {
+        return { ok: true, localFallback: true };
+      }
       return { ok: true, localFallback: false };
     } catch {
       return { ok: true, localFallback: true };

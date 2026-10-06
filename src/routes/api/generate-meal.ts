@@ -76,8 +76,9 @@ export const Route = createFileRoute("/api/generate-meal")({
         );
       },
       POST: async ({ request }) => {
+        let body: Record<string, unknown> = {};
         try {
-          const body = await request.json();
+          body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
           const {
             mealType = "Lunch",
             diet = "Vegetarian",
@@ -102,8 +103,10 @@ export const Route = createFileRoute("/api/generate-meal")({
           const userId = String(body.userId || "anonymous");
 
           // Normalize parameters
-          const sanitizedMealType = String(mealType);
-          const canonicalDiet: CanonicalDiet = normalizeDietType(diet);
+          const sanitizedMealType = typeof mealType === "string" ? mealType : "Lunch";
+          const canonicalDiet: CanonicalDiet = normalizeDietType(
+            typeof diet === "string" ? diet : "Vegetarian",
+          );
           const numericBudget =
             typeof budget === "number"
               ? budget
@@ -353,15 +356,18 @@ ${exclusionPromptClause}`;
           return generateOfflineSingleMealFallback(userContextPayload, canonicalDiet);
         } catch (err) {
           console.error("[/api/generate-meal] Error:", err);
+          const fallbackDiet = typeof body?.diet === "string" ? body.diet : "Vegetarian";
+          const fallbackDietType = normalizeDietType(fallbackDiet);
+          const fallbackMealType = typeof body?.mealType === "string" ? body.mealType : "Lunch";
           return generateOfflineSingleMealFallback(
             {
-              mealType: String(body?.mealType || "Lunch"),
-              diet: normalizeDietType(body?.diet),
+              mealType: fallbackMealType,
+              diet: fallbackDietType,
               calorieTarget: Number(body?.calorieTarget) || 500,
               proteinTarget: Number(body?.proteinTarget) || 30,
               excludedMeals: Array.isArray(body?.excludedMeals) ? body.excludedMeals : [],
             },
-            normalizeDietType(body?.diet),
+            fallbackDietType,
           );
         }
       },
@@ -613,8 +619,10 @@ async function generateOfflineSingleMealFallback(
   userContextPayload: Record<string, unknown>,
   canonicalDiet: CanonicalDiet,
 ) {
-  const slot = userContextPayload.mealType || "Lunch";
-  const excluded = userContextPayload.excludedMeals || [];
+  const slot = String(userContextPayload.mealType || "Lunch");
+  const excluded = Array.isArray(userContextPayload.excludedMeals)
+    ? (userContextPayload.excludedMeals as string[])
+    : [];
 
   const cand = getOfflineMealCandidateForSlot(
     slot,

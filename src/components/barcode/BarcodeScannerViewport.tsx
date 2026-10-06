@@ -142,7 +142,9 @@ export function BarcodeScannerViewport({
                 setHasFlash(true);
                 if (settings.autoFlash) {
                   track
-                    .applyConstraints({ advanced: [{ torch: true }] } as MediaTrackConstraints)
+                    .applyConstraints({
+                      advanced: [{ torch: true }],
+                    } as unknown as MediaTrackConstraints)
                     .catch(() => {});
                   setIsFlashOn(true);
                 }
@@ -197,7 +199,7 @@ export function BarcodeScannerViewport({
       const nextState = !isFlashOn;
       await videoTrackRef.current.applyConstraints({
         advanced: [{ torch: nextState }],
-      } as MediaTrackConstraints);
+      } as unknown as MediaTrackConstraints);
       setIsFlashOn(nextState);
     } catch {
       toast.error("Flash not supported on this device/browser");

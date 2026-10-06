@@ -1,9 +1,12 @@
 export type CanonicalDiet = "VEGETARIAN" | "NON_VEGETARIAN" | "MIXED";
 
-export function normalizeDietType(dietStr: string): CanonicalDiet {
-  const s = String(dietStr || "")
-    .toLowerCase()
-    .trim();
+export function normalizeDietType(dietStr?: unknown): CanonicalDiet {
+  const s =
+    typeof dietStr === "string"
+      ? dietStr.toLowerCase().trim()
+      : String(dietStr ?? "")
+          .toLowerCase()
+          .trim();
   if (s.includes("mixed") || s.includes("both")) {
     return "MIXED";
   }

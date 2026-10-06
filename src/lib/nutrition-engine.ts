@@ -642,7 +642,7 @@ export async function runNutritionEngineVerificationTests(): Promise<{
     i.name.includes("Unknown Space Mineral"),
   );
   const t5Passed =
-    Boolean(unmatchedItem?.normalized_name.startsWith("Unmatched ingredient")) &&
+    Boolean(unmatchedItem?.normalized_name?.startsWith("Unmatched ingredient")) &&
     unmatchedItem?.calories === 0;
   results.push({
     name: "Test 5: Unmatched Ingredient Handling (No Guessed Macros)",

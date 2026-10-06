@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getToday } from "@/lib/analytics.functions";
 import { getProfile } from "@/lib/profile.functions";
 import { addWater } from "@/lib/profile.functions";
-import { LocalStore } from "@/lib/local-store";
+import { LocalStore, LocalProfile, LocalMeal } from "@/lib/local-store";
 import { getLocalDateString } from "@/lib/date-utils";
 import { CalorieHero } from "@/components/CalorieHero";
 import { StepCounter } from "@/components/StepCounter";
@@ -159,13 +159,24 @@ function HomePage() {
   const serverMealIds = new Set(serverMeals.map((m) => m.id));
   const combinedMeals = [...serverMeals, ...localMeals.filter((m) => !serverMealIds.has(m.id))];
 
-  const profile = profileQ.data?.profile ||
+  const profile = (profileQ.data?.profile ||
     localProfile || {
       display_name: "Gaurav",
+      gender: "other",
+      age: 25,
+      height_cm: 175,
+      weight_kg: 70,
+      goal_weight_kg: 70,
+      activity: "moderate",
+      goal: "maintenance",
+      diet: "non_veg",
       daily_calorie_target: 2000,
       protein_target_g: 120,
       water_target_glasses: 8,
-    };
+      water_goal_l: 2.5,
+      onboarded: true,
+      extended_data: {},
+    }) as LocalProfile;
 
   const rollup = todayQ.data?.rollup;
   const calTarget = Number(profile?.daily_calorie_target ?? 2000);
@@ -264,14 +275,25 @@ function HomePage() {
   else if (lowMicros.length > 0)
     advice = `Your ${lowMicros[0].label} intake is low today — consider adding a nutrient-dense snack.`;
 
-  const formattedAuroraMeals = combinedMeals.map((m, idx) => ({
-    id: String(m.id || idx),
-    name: m.name || "Logged Meal",
-    calories: Number(m.calories || 0),
-    protein: Number(m.protein_g || 0),
-    time: m.time || "Today",
-    emoji: m.emoji || (idx % 2 === 0 ? "🍳" : "🥗"),
-  }));
+  const formattedAuroraMeals = combinedMeals.map((m, idx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mealObj = m as Record<string, any>;
+    return {
+      id: String(mealObj.id || idx),
+      name: mealObj.name || "Logged Meal",
+      calories: Number(mealObj.calories || 0),
+      protein: Number(mealObj.protein_g || 0),
+      time:
+        mealObj.time ||
+        (mealObj.eaten_at
+          ? new Date(mealObj.eaten_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "Today"),
+      emoji: mealObj.emoji || (idx % 2 === 0 ? "🍳" : "🥗"),
+    };
+  });
 
   return (
     <div className="space-y-6 pb-6 animate-in fade-in duration-300">
@@ -597,35 +619,51 @@ function HomePage() {
                     <div className="font-display text-sm font-extrabold text-foreground truncate">
                       {m.name}
                     </div>
-                    <div className="text-xs font-medium text-muted-foreground mt-0.5 truncate">
-                      {m.serving_desc ? `${m.serving_desc} · ` : ""}
-                      {m.eaten_at
-                        ? new Date(m.eaten_at).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "Today"}
-                    </div>
-                    {/* Advanced Micro Badges if available */}
-                    {(m.iron_mg || m.calcium_mg || m.magnesium_mg) && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {Boolean(m.iron_mg) && (
-                          <span className="inline-flex items-center rounded-lg bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-500">
-                            Iron: {m.iron_mg}mg
-                          </span>
-                        )}
-                        {Boolean(m.calcium_mg) && (
-                          <span className="inline-flex items-center rounded-lg bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400">
-                            Calcium: {m.calcium_mg}mg
-                          </span>
-                        )}
-                        {Boolean(m.magnesium_mg) && (
-                          <span className="inline-flex items-center rounded-lg bg-[#00E58F]/10 border border-[#00E58F]/20 px-2 py-0.5 text-[10px] font-bold text-[#00E58F]">
-                            Magnesium: {m.magnesium_mg}mg
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    {(() => {
+                      const mealObj = m as Record<string, unknown>;
+                      const servingDesc =
+                        typeof mealObj.serving_desc === "string" ? mealObj.serving_desc : "";
+                      const eatenAt = typeof mealObj.eaten_at === "string" ? mealObj.eaten_at : "";
+                      const iron = typeof mealObj.iron_mg === "number" ? mealObj.iron_mg : 0;
+                      const calcium =
+                        typeof mealObj.calcium_mg === "number" ? mealObj.calcium_mg : 0;
+                      const magnesium =
+                        typeof mealObj.magnesium_mg === "number" ? mealObj.magnesium_mg : 0;
+
+                      return (
+                        <>
+                          <div className="text-xs font-medium text-muted-foreground mt-0.5 truncate">
+                            {servingDesc ? `${servingDesc} · ` : ""}
+                            {eatenAt
+                              ? new Date(eatenAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "Today"}
+                          </div>
+                          {/* Advanced Micro Badges if available */}
+                          {(iron > 0 || calcium > 0 || magnesium > 0) && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {iron > 0 && (
+                                <span className="inline-flex items-center rounded-lg bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-500">
+                                  Iron: {iron}mg
+                                </span>
+                              )}
+                              {calcium > 0 && (
+                                <span className="inline-flex items-center rounded-lg bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400">
+                                  Calcium: {calcium}mg
+                                </span>
+                              )}
+                              {magnesium > 0 && (
+                                <span className="inline-flex items-center rounded-lg bg-[#00E58F]/10 border border-[#00E58F]/20 px-2 py-0.5 text-[10px] font-bold text-[#00E58F]">
+                                  Magnesium: {magnesium}mg
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   <div className="text-left sm:text-right text-xs shrink-0">

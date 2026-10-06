@@ -88,8 +88,9 @@ export function MealsPage() {
   const [cuisine, setCuisine] = useState<string>("Any");
   const [availableIngredients, setAvailableIngredients] = useState<string>("");
   const [foodsToAvoid, setFoodsToAvoid] = useState<string>(() => {
-    const dislikes = profile?.extended_data?.disliked_foods || [];
-    const allergies = profile?.extended_data?.allergies || [];
+    const ext = (profile?.extended_data as Record<string, unknown>) || {};
+    const dislikes = Array.isArray(ext.disliked_foods) ? ext.disliked_foods : [];
+    const allergies = Array.isArray(ext.allergies) ? ext.allergies : [];
     return [...dislikes, ...allergies].join(", ");
   });
   const [budget, setBudget] = useState<string>("medium");

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { StepCounter, isNativeAndroid, type StepUpdateEvent } from "@/services/stepCounter";
 import { LocalStore } from "@/lib/local-store";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface UseStepCounterOptions {
   todayStr?: string;
@@ -55,6 +56,37 @@ export function useStepCounter(options: UseStepCounterOptions = {}): UseStepCoun
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isNative = isNativeAndroid();
+
+  const syncStepsToSupabase = useCallback(
+    async (dStr: string, stepCount: number) => {
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const userId = sess.session?.user?.id;
+        if (!userId) return;
+
+        const strideM = ((heightCm || 175) * 0.414) / 100;
+        const distKm = Number(((stepCount * strideM) / 1000).toFixed(2));
+        const cals = Number((stepCount * (weightKg || 70) * 0.0006125).toFixed(1));
+        const mins = Math.round(stepCount / 100);
+
+        await supabase.from("step_logs").upsert(
+          {
+            user_id: userId,
+            day: dStr,
+            steps: stepCount,
+            distance_km: distKm,
+            calories_burned: cals,
+            active_minutes: mins,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,day" },
+        );
+      } catch {
+        // ignore offline errors
+      }
+    },
+    [heightCm, weightKg],
+  );
 
   const listenerHandleRef = useRef<{ remove: () => Promise<void> } | null>(null);
 
@@ -256,7 +288,8 @@ export function useStepCounter(options: UseStepCounterOptions = {}): UseStepCoun
     }
     setSteps(0);
     LocalStore.saveSteps(todayStr, 0, { weightKg, heightCm, targetSteps });
-  }, [todayStr, weightKg, heightCm, targetSteps]);
+    syncStepsToSupabase(todayStr, 0);
+  }, [todayStr, weightKg, heightCm, targetSteps, syncStepsToSupabase]);
 
   // Manual update for testing or user adjustment
   const updateManualSteps = useCallback(
@@ -264,8 +297,9 @@ export function useStepCounter(options: UseStepCounterOptions = {}): UseStepCoun
       const sanitized = Math.max(0, Math.round(newCount));
       setSteps(sanitized);
       LocalStore.saveSteps(todayStr, sanitized, { weightKg, heightCm, targetSteps });
+      syncStepsToSupabase(todayStr, sanitized);
     },
-    [todayStr, weightKg, heightCm, targetSteps],
+    [todayStr, weightKg, heightCm, targetSteps, syncStepsToSupabase],
   );
 
   // User Profile Biometric Mathematics

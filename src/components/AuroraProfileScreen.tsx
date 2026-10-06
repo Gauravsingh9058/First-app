@@ -114,7 +114,8 @@ export function AuroraProfileScreen({
   >(null);
 
   // Editable Form State for focused section editing
-  const [editForm, setEditForm] = useState<Record<string, unknown>>({});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [editForm, setEditForm] = useState<Record<string, any>>({});
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync editForm state when a section modal is opened
@@ -398,11 +399,10 @@ export function AuroraProfileScreen({
                   <span className="truncate text-foreground/80 dark:text-white/80">
                     {phoneDisplay}
                   </span>
-                  {profile.mobile_verified && (
-                    <BadgeCheck
-                      className="h-3.5 w-3.5 text-emerald-600 dark:text-[#34D399] shrink-0"
-                      title="Verified Mobile"
-                    />
+                  {Boolean(profile.mobile_verified) && (
+                    <span title="Verified Mobile">
+                      <BadgeCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-[#34D399] shrink-0" />
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 truncate">

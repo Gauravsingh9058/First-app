@@ -15,6 +15,15 @@ export interface RecipeIngredient {
   fat_g: number;
   fiber_g?: number;
   sugar_g?: number;
+  sodium_mg?: number;
+  iron_mg?: number;
+  calcium_mg?: number;
+  magnesium_mg?: number;
+  potassium_mg?: number;
+  vit_a_ug?: number;
+  vit_b12_ug?: number;
+  vit_d_ug?: number;
+  omega3_g?: number;
 }
 
 export interface RecipeStep {

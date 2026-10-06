@@ -332,19 +332,15 @@ export const Route = createFileRoute("/api/scan")({
             // Provide a graceful fallback result so temporary upstream 503s don't block the user
             parsedResult = {
               meal_name: "Scanned Meal",
-              scan_status: "food_detected",
-              confidence_score: 0.7,
-              cuisine_type: "General",
-              health_rating: 7,
-              health_insights:
-                "Food analyzed using default nutritional profile while AI servers are under high load.",
+              scan_status: "success",
+              overall_confidence: 0.7,
+              diet_type: "VEGETARIAN",
               total_estimated_weight_g: 250,
               estimated_oil_g: 5,
               food_items: [
                 {
                   name: "Mixed Meal Portion",
                   estimated_quantity_g: 250,
-                  visual_cues: "Identified food plate from camera capture",
                   calories: 360,
                   protein_g: 18,
                   carbs_g: 42,
@@ -358,6 +354,9 @@ export const Route = createFileRoute("/api/scan")({
           }
 
           const parsed = parsedResult;
+          if (!parsed) {
+            return Response.json({ error: "Failed to parse meal scan result" }, { status: 500 });
+          }
 
           if (parsed.scan_status === "no_food_detected") {
             return Response.json(

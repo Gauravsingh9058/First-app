@@ -51,6 +51,7 @@ export type Database = {
           protein_g: number;
           score: number;
           sodium_mg: number;
+          steps: number;
           sugar_g: number;
           updated_at: string;
           user_id: string;
@@ -74,6 +75,7 @@ export type Database = {
           protein_g?: number;
           score?: number;
           sodium_mg?: number;
+          steps?: number;
           sugar_g?: number;
           updated_at?: string;
           user_id: string;
@@ -97,6 +99,7 @@ export type Database = {
           protein_g?: number;
           score?: number;
           sodium_mg?: number;
+          steps?: number;
           sugar_g?: number;
           updated_at?: string;
           user_id?: string;
@@ -222,6 +225,7 @@ export type Database = {
           daily_calorie_target: number | null;
           diet: Database["public"]["Enums"]["diet_type"] | null;
           display_name: string | null;
+          extended_data: Json;
           gender: string | null;
           goal: Database["public"]["Enums"]["goal_type"] | null;
           goal_weight_kg: number | null;
@@ -230,6 +234,7 @@ export type Database = {
           protein_target_g: number | null;
           updated_at: string;
           user_id: string;
+          water_goal_l: number | null;
           water_target_glasses: number | null;
           weight_kg: number | null;
         };
@@ -240,6 +245,7 @@ export type Database = {
           daily_calorie_target?: number | null;
           diet?: Database["public"]["Enums"]["diet_type"] | null;
           display_name?: string | null;
+          extended_data?: Json;
           gender?: string | null;
           goal?: Database["public"]["Enums"]["goal_type"] | null;
           goal_weight_kg?: number | null;
@@ -248,6 +254,7 @@ export type Database = {
           protein_target_g?: number | null;
           updated_at?: string;
           user_id: string;
+          water_goal_l?: number | null;
           water_target_glasses?: number | null;
           weight_kg?: number | null;
         };
@@ -258,6 +265,7 @@ export type Database = {
           daily_calorie_target?: number | null;
           diet?: Database["public"]["Enums"]["diet_type"] | null;
           display_name?: string | null;
+          extended_data?: Json;
           gender?: string | null;
           goal?: Database["public"]["Enums"]["goal_type"] | null;
           goal_weight_kg?: number | null;
@@ -266,8 +274,42 @@ export type Database = {
           protein_target_g?: number | null;
           updated_at?: string;
           user_id?: string;
+          water_goal_l?: number | null;
           water_target_glasses?: number | null;
           weight_kg?: number | null;
+        };
+        Relationships: [];
+      };
+      step_logs: {
+        Row: {
+          active_minutes: number;
+          calories_burned: number;
+          day: string;
+          distance_km: number;
+          id: string;
+          steps: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          active_minutes?: number;
+          calories_burned?: number;
+          day?: string;
+          distance_km?: number;
+          id?: string;
+          steps?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          active_minutes?: number;
+          calories_burned?: number;
+          day?: string;
+          distance_km?: number;
+          id?: string;
+          steps?: number;
+          updated_at?: string;
+          user_id?: string;
         };
         Relationships: [];
       };

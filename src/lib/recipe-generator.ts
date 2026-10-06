@@ -142,7 +142,13 @@ export async function generatePersonalizedMeals(
 
   const mealTargetCal = Math.round(remCal > 300 ? remCal * slotMultiplier : remCal);
   const mealTargetPro = Math.round(remPro > 15 ? remPro * slotMultiplier : remPro);
-  const budgetLimit = options.budgetLimit || profile.extended_data?.max_budget || 100;
+  const ext = (profile.extended_data as Record<string, unknown>) || {};
+  const budgetLimit: number =
+    typeof options.budgetLimit === "number"
+      ? options.budgetLimit
+      : typeof ext.max_budget === "number"
+        ? ext.max_budget
+        : 100;
 
   const userDiet =
     options.preferredDiet ||
@@ -161,9 +167,9 @@ export async function generatePersonalizedMeals(
     maxPrepMinutes: options.maxPrepMinutes || 30,
     preferredDiet: userDiet,
     selectedGoal: options.selectedGoal || profile.goal || "Maintenance",
-    allergies: profile.extended_data?.allergies || [],
-    dislikedFoods: profile.extended_data?.disliked_foods || [],
-    likedFoods: profile.extended_data?.liked_foods || [],
+    allergies: (Array.isArray(ext.allergies) ? ext.allergies : []) as string[],
+    dislikedFoods: (Array.isArray(ext.disliked_foods) ? ext.disliked_foods : []) as string[],
+    likedFoods: (Array.isArray(ext.liked_foods) ? ext.liked_foods : []) as string[],
   };
   const preferenceLoadMs = Math.round((performance.now() - prefStart) * 100) / 100;
 
@@ -181,9 +187,9 @@ export async function generatePersonalizedMeals(
     options.cuisine || "All",
     bucketedCal,
     bucketedPro,
-    context.allergies.join(","),
-    context.dislikedFoods.join(","),
-    context.likedFoods.join(","),
+    (context.allergies || []).join(","),
+    (context.dislikedFoods || []).join(","),
+    (context.likedFoods || []).join(","),
   ].join("::");
 
   if (mealGenSessionCache.has(cacheKey)) {
@@ -266,7 +272,7 @@ export async function generatePersonalizedMeals(
             name: rawRecipe.name,
             meal_type: options.mealType,
             diet_type: rawRecipe.diet_type || "veg",
-            goal: context.selectedGoal,
+            goal: context.selectedGoal || "maintenance",
             cost_amount: nutrition.estimatedCost || rawRecipe.estimated_cost || 45,
             currency: "₹",
             prep_minutes: rawRecipe.prep_minutes || 15,
@@ -311,7 +317,7 @@ export async function generatePersonalizedMeals(
               instruction: inst,
             })),
             tags: rawRecipe.tags || ["Gemini AI", "High Precision"],
-            goals: [context.selectedGoal],
+            goals: [context.selectedGoal || "maintenance"],
           };
 
           recentlyServedRecipeIds.add(newRecipe.id);
@@ -392,7 +398,7 @@ export async function generatePersonalizedMeals(
       : "Spiced Egg & Whole Wheat Roti Bowl",
     meal_type: options.mealType,
     diet_type: isVeg ? "veg" : "non_veg",
-    goal: context.selectedGoal,
+    goal: context.selectedGoal || "maintenance",
     cost_amount: fallbackNut.estimatedCost || 50,
     currency: "₹",
     prep_minutes: 15,
@@ -427,7 +433,7 @@ export async function generatePersonalizedMeals(
       { step_number: 4, instruction: "Serve hot alongside warm whole wheat roti and curd dip." },
     ],
     tags: ["High Protein", "Balanced", "Quick & Easy"],
-    goals: [context.selectedGoal],
+    goals: [context.selectedGoal || "maintenance"],
   };
 
   const rankedFallback = rankRecipesForUser([fallbackRecipe], context);

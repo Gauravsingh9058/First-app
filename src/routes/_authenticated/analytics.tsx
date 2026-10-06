@@ -80,33 +80,29 @@ export function AnalyticsPage() {
       map.set(dKey, { day: dKey, calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 });
     }
 
-    if (macroQ.data) {
+    if (macroQ.data && macroQ.data.length > 0) {
       for (const r of macroQ.data) {
         const dKey = String(r.day);
-        const existing = map.get(dKey) || {
-          day: dKey,
-          calories: 0,
-          protein_g: 0,
-          carbs_g: 0,
-          fat_g: 0,
-        };
-        existing.calories = Math.max(existing.calories, Number(r.calories || 0));
-        existing.protein_g = Math.max(existing.protein_g, Number(r.protein_g || 0));
-        existing.carbs_g = Math.max(existing.carbs_g, Number(r.carbs_g || 0));
-        existing.fat_g = Math.max(existing.fat_g, Number(r.fat_g || 0));
-        map.set(dKey, existing);
+        if (map.has(dKey)) {
+          const existing = map.get(dKey)!;
+          existing.calories = Number(r.calories || 0);
+          existing.protein_g = Number(r.protein_g || 0);
+          existing.carbs_g = Number(r.carbs_g || 0);
+          existing.fat_g = Number(r.fat_g || 0);
+        }
       }
-    }
-
-    const localMeals = LocalStore.getMeals();
-    for (const m of localMeals) {
-      const dKey = m.eaten_on || (m.eaten_at ? getLocalDateString(new Date(m.eaten_at)) : "");
-      if (map.has(dKey)) {
-        const entry = map.get(dKey)!;
-        entry.calories += Number(m.calories || 0);
-        entry.protein_g += Number(m.protein_g || 0);
-        entry.carbs_g += Number(m.carbs_g || 0);
-        entry.fat_g += Number(m.fat_g || 0);
+    } else {
+      // Local fallback only if no server data
+      const localMeals = LocalStore.getMeals();
+      for (const m of localMeals) {
+        const dKey = m.eaten_on || (m.eaten_at ? getLocalDateString(new Date(m.eaten_at)) : "");
+        if (map.has(dKey)) {
+          const entry = map.get(dKey)!;
+          entry.calories += Number(m.calories || 0);
+          entry.protein_g += Number(m.protein_g || 0);
+          entry.carbs_g += Number(m.carbs_g || 0);
+          entry.fat_g += Number(m.fat_g || 0);
+        }
       }
     }
 
@@ -141,31 +137,36 @@ export function AnalyticsPage() {
 
   const microBarData = useMemo(() => {
     void localVersion;
-    const localMeals = LocalStore.getMeals();
     const nutKeys = Object.keys(RDA) as Array<keyof typeof RDA>;
 
+    if (microQ.data?.rows && microQ.data.rows.length > 0) {
+      const logged = microQ.data.rows.filter((r) => Number(r.meal_count ?? 0) > 0);
+      const count = Math.max(1, logged.length);
+
+      return nutKeys.map((nut) => {
+        const total = logged.reduce(
+          (s, r) => s + Number((r as Record<string, unknown>)[nut] ?? 0),
+          0,
+        );
+        const avg = logged.length > 0 ? total / count : 0;
+        const pct = Math.min(180, Math.round((avg / RDA[nut]) * 100));
+        return {
+          name: MICRO_LABELS[nut].replace("Vitamin ", "Vit "),
+          pct,
+          unit: MICRO_UNITS[nut],
+          rda: RDA[nut],
+        };
+      });
+    }
+
+    const localMeals = LocalStore.getMeals();
     return nutKeys.map((nut) => {
       const localTotal = localMeals.reduce(
         (sum, m) => sum + Number((m as unknown as Record<string, unknown>)[nut] || 0),
         0,
       );
-
-      let serverTotal = 0;
-      let count = localMeals.length > 0 ? 1 : 0;
-
-      if (microQ.data?.rows) {
-        const logged = microQ.data.rows.filter((r) => Number(r.meal_count ?? 0) > 0);
-        if (logged.length > 0) {
-          serverTotal = logged.reduce(
-            (s, r) => s + Number((r as Record<string, unknown>)[nut] ?? 0),
-            0,
-          );
-          count = logged.length;
-        }
-      }
-
-      const totalVal = Math.max(serverTotal, localTotal);
-      const avg = count > 0 ? totalVal / Math.max(1, count) : 0;
+      const count = localMeals.length > 0 ? 1 : 0;
+      const avg = count > 0 ? localTotal / count : 0;
       const pct = Math.min(180, Math.round((avg / RDA[nut]) * 100));
 
       return {

@@ -8,9 +8,10 @@ import { Sparkles, Loader2, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — NutriLens" }] }),
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { mode?: "sign_in" | "sign_up" } => {
     return {
-      mode: (search.mode === "sign_up" ? "sign_up" : "sign_in") as "sign_in" | "sign_up",
+      mode:
+        search.mode === "sign_up" ? "sign_up" : search.mode === "sign_in" ? "sign_in" : undefined,
     };
   },
   beforeLoad: async () => {

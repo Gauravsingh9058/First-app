@@ -26,65 +26,9 @@ export interface LocalProfile {
   daily_calorie_target: number;
   protein_target_g: number;
   water_target_glasses: number;
+  water_goal_l?: number;
   onboarded: boolean;
-  // Extended 13 categories
-  extended_data?: {
-    country?: string;
-    timezone?: string;
-    bmi?: number;
-    body_fat_pct?: number;
-    waist_cm?: number;
-    hip_cm?: number;
-    neck_cm?: number;
-    chest_cm?: number;
-    occupation?: string;
-    sitting_hours?: number;
-    exercise_days?: number;
-    workout_type?: string;
-    walking_habit?: string;
-    sleep_time?: string;
-    wake_time?: string;
-    stress_level?: string;
-    health_flags?: string[];
-    allergies?: string[];
-    favorite_foods?: string;
-    hated_foods?: string;
-    preferred_cuisine?: string;
-    meal_frequency?: string;
-    breakfast_time?: string;
-    lunch_time?: string;
-    dinner_time?: string;
-    snacks_per_day?: number;
-    fitness_goals?: string[];
-    goal_timeline?: string;
-    custom_goal_date?: string;
-    current_water_l?: number;
-    water_goal_l?: number;
-    daily_steps?: number;
-    workout_duration_min?: number;
-    workout_intensity?: string;
-    sports_played?: string;
-    wearables?: {
-      google_fit?: boolean;
-      apple_health?: boolean;
-      health_connect?: boolean;
-      fitbit?: boolean;
-      samsung_health?: boolean;
-      sync_steps?: boolean;
-      sync_calories?: boolean;
-      sync_heart_rate?: boolean;
-      sync_sleep?: boolean;
-      sync_distance?: boolean;
-      sync_workouts?: boolean;
-    };
-    blood_group?: string;
-    blood_pressure?: string;
-    resting_hr?: number;
-    lab_reports_status?: string;
-    current_medicines?: string;
-    bmr?: number;
-    tdee?: number;
-  };
+  extended_data?: Record<string, unknown>;
 }
 
 export interface LocalMeal {
@@ -113,16 +57,70 @@ export interface LocalMeal {
   omega3_g?: number;
 }
 
-const PROFILE_KEY = "nutrilens_local_profile_v3";
-const MEALS_KEY = "nutrilens_local_meals_v3";
-const WATER_KEY = "nutrilens_local_water_v3";
-const STEPS_KEY = "nutrilens_local_steps_v3";
+const hasStorage = () => typeof window !== "undefined" || typeof localStorage !== "undefined";
+
+let activeUserId: string | null = null;
 
 export const LocalStore = {
+  setAccount(userId: string | null): void {
+    activeUserId = userId || null;
+    if (hasStorage()) {
+      try {
+        if (userId) {
+          localStorage.setItem("nutrilens_active_user_id", userId);
+        } else {
+          localStorage.removeItem("nutrilens_active_user_id");
+        }
+      } catch {
+        // ignore
+      }
+    }
+  },
+
+  getActiveUserId(): string | null {
+    if (activeUserId) return activeUserId;
+    if (hasStorage()) {
+      try {
+        const stored = localStorage.getItem("nutrilens_active_user_id");
+        if (stored) {
+          activeUserId = stored;
+          return stored;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return null;
+  },
+
+  getProfileKey(): string {
+    const uid = this.getActiveUserId();
+    return uid ? `nutrilens_profile_${uid}` : "nutrilens_local_profile_v3";
+  },
+
+  getMealsKey(): string {
+    const uid = this.getActiveUserId();
+    return uid ? `nutrilens_meals_${uid}` : "nutrilens_local_meals_v3";
+  },
+
+  getWaterKey(day: string): string {
+    const uid = this.getActiveUserId();
+    return uid ? `nutrilens_water_${uid}_${day}` : `nutrilens_local_water_v3_${day}`;
+  },
+
+  getStepsKey(day: string): string {
+    const uid = this.getActiveUserId();
+    return uid ? `nutrilens_steps_${uid}_${day}` : `nutrilens_local_steps_v3_${day}`;
+  },
+
   getSteps(day: string): number {
-    if (typeof window === "undefined") return 0;
+    if (!hasStorage()) return 0;
     try {
-      const raw = localStorage.getItem(`${STEPS_KEY}_${day}`);
+      const scopedKey = this.getStepsKey(day);
+      let raw = localStorage.getItem(scopedKey);
+      if (!raw && !this.getActiveUserId()) {
+        raw = localStorage.getItem(`nutrilens_local_steps_v3_${day}`);
+      }
       return raw ? Number(raw) : 0;
     } catch {
       return 0;
@@ -138,10 +136,10 @@ export const LocalStore = {
       targetSteps?: number;
     },
   ): number {
-    if (typeof window === "undefined") return 0;
+    if (!hasStorage()) return 0;
     try {
       const sanitized = Math.max(0, Math.round(steps));
-      localStorage.setItem(`${STEPS_KEY}_${day}`, String(sanitized));
+      localStorage.setItem(this.getStepsKey(day), String(sanitized));
 
       const weight = extraMetrics?.weightKg || 70;
       const height = extraMetrics?.heightCm || 175;
@@ -169,10 +167,16 @@ export const LocalStore = {
     const current = this.getSteps(day);
     return this.saveSteps(day, current + increment);
   },
+
   getProfile(): LocalProfile | null {
-    if (typeof window === "undefined") return null;
+    if (!hasStorage()) return null;
     try {
-      const raw = localStorage.getItem(PROFILE_KEY);
+      const scopedKey = this.getProfileKey();
+      let raw = localStorage.getItem(scopedKey);
+      if (!raw) {
+        // Check legacy key for fallback
+        raw = localStorage.getItem("nutrilens_local_profile_v3");
+      }
       if (!raw) return null;
       return JSON.parse(raw) as LocalProfile;
     } catch {
@@ -181,9 +185,12 @@ export const LocalStore = {
   },
 
   saveProfile(profile: LocalProfile): void {
-    if (typeof window === "undefined") return;
+    if (!hasStorage()) return;
     try {
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+      if (profile.user_id && !activeUserId) {
+        this.setAccount(profile.user_id);
+      }
+      localStorage.setItem(this.getProfileKey(), JSON.stringify(profile));
       saveProfileToSQLite(profile);
       notifyDataChanged();
     } catch {
@@ -192,9 +199,13 @@ export const LocalStore = {
   },
 
   getMeals(day?: string): LocalMeal[] {
-    if (typeof window === "undefined") return [];
+    if (!hasStorage()) return [];
     try {
-      const raw = localStorage.getItem(MEALS_KEY);
+      const scopedKey = this.getMealsKey();
+      let raw = localStorage.getItem(scopedKey);
+      if (!raw && !this.getActiveUserId()) {
+        raw = localStorage.getItem("nutrilens_local_meals_v3");
+      }
       const meals: LocalMeal[] = raw ? JSON.parse(raw) : [];
       if (day) {
         return meals.filter((m) => {
@@ -209,13 +220,25 @@ export const LocalStore = {
     }
   },
 
+  setMeals(meals: LocalMeal[]): void {
+    if (!hasStorage()) return;
+    try {
+      localStorage.setItem(this.getMealsKey(), JSON.stringify(meals.slice(0, 500)));
+      notifyDataChanged();
+    } catch {
+      // ignore
+    }
+  },
+
   addMeal(meal: Omit<LocalMeal, "id"> & { id?: string }): LocalMeal {
     const meals = this.getMeals();
     const eatenOn =
       meal.eaten_on ||
       (meal.eaten_at ? getLocalDateString(new Date(meal.eaten_at)) : getLocalDateString());
+    const uid = meal.user_id || this.getActiveUserId() || undefined;
     const newMeal: LocalMeal = {
       ...meal,
+      user_id: uid,
       id: meal.id || `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       eaten_on: eatenOn,
     };
@@ -225,9 +248,9 @@ export const LocalStore = {
     } else {
       meals.unshift(newMeal);
     }
-    if (typeof window !== "undefined") {
+    if (hasStorage()) {
       try {
-        localStorage.setItem(MEALS_KEY, JSON.stringify(meals.slice(0, 500)));
+        localStorage.setItem(this.getMealsKey(), JSON.stringify(meals.slice(0, 500)));
         saveMealToSQLite(newMeal).then(() => {
           updateDailyNutritionSummaryInSQLite(eatenOn);
         });
@@ -244,12 +267,12 @@ export const LocalStore = {
   },
 
   deleteMeal(id: string): void {
-    if (typeof window === "undefined") return;
+    if (!hasStorage()) return;
     try {
       const targetMeal = this.getMeals().find((m) => m.id === id);
       const eatenOn = targetMeal?.eaten_on || getLocalDateString();
       const meals = this.getMeals().filter((m) => m.id !== id);
-      localStorage.setItem(MEALS_KEY, JSON.stringify(meals));
+      localStorage.setItem(this.getMealsKey(), JSON.stringify(meals));
       deleteMealFromSQLite(id).then(() => {
         updateDailyNutritionSummaryInSQLite(eatenOn);
       });
@@ -260,9 +283,13 @@ export const LocalStore = {
   },
 
   getWater(day: string): number {
-    if (typeof window === "undefined") return 0;
+    if (!hasStorage()) return 0;
     try {
-      const raw = localStorage.getItem(`${WATER_KEY}_${day}`);
+      const scopedKey = this.getWaterKey(day);
+      let raw = localStorage.getItem(scopedKey);
+      if (!raw && !this.getActiveUserId()) {
+        raw = localStorage.getItem(`nutrilens_local_water_v3_${day}`);
+      }
       return raw ? Number(raw) : 0;
     } catch {
       return 0;
@@ -270,7 +297,7 @@ export const LocalStore = {
   },
 
   addWater(arg1: string | number, arg2?: string | number): number {
-    if (typeof window === "undefined") return 0;
+    if (!hasStorage()) return 0;
     try {
       let day: string;
       let glasses = 1;
@@ -284,7 +311,7 @@ export const LocalStore = {
       }
 
       const cur = Math.max(0, Math.round((this.getWater(day) + glasses) * 100) / 100);
-      localStorage.setItem(`${WATER_KEY}_${day}`, String(cur));
+      localStorage.setItem(this.getWaterKey(day), String(cur));
       saveWaterToSQLite(day, cur);
       updateDailyNutritionSummaryInSQLite(day);
       notifyDataChanged();
@@ -295,10 +322,10 @@ export const LocalStore = {
   },
 
   setWater(day: string, totalGlasses: number): number {
-    if (typeof window === "undefined") return 0;
+    if (!hasStorage()) return 0;
     try {
       const cur = Math.max(0, Math.round((Number(totalGlasses) || 0) * 100) / 100);
-      localStorage.setItem(`${WATER_KEY}_${day}`, String(cur));
+      localStorage.setItem(this.getWaterKey(day), String(cur));
       saveWaterToSQLite(day, cur);
       updateDailyNutritionSummaryInSQLite(day);
       notifyDataChanged();
@@ -306,6 +333,10 @@ export const LocalStore = {
     } catch {
       return 0;
     }
+  },
+
+  setSteps(day: string, steps: number): number {
+    return this.saveSteps(day, steps);
   },
 
   getDailySummary(dayStr: string) {
@@ -421,11 +452,13 @@ export const LocalStore = {
       const d = m.eaten_on || (m.eaten_at ? getLocalDateString(new Date(m.eaten_at)) : "");
       if (d) dates.add(d);
     }
-    if (typeof window !== "undefined") {
+    if (hasStorage()) {
+      const uid = this.getActiveUserId();
+      const waterPrefix = uid ? `nutrilens_water_${uid}_` : "nutrilens_local_water_v3_";
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith(`${WATER_KEY}_`)) {
-          const d = key.replace(`${WATER_KEY}_`, "");
+        if (key && key.startsWith(waterPrefix)) {
+          const d = key.replace(waterPrefix, "");
           if (d) dates.add(d);
         }
       }
@@ -433,13 +466,18 @@ export const LocalStore = {
     return Array.from(dates).sort().reverse();
   },
 
-  clearAll(): void {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.removeItem(PROFILE_KEY);
-      localStorage.removeItem(MEALS_KEY);
-    } catch {
-      // ignore
+  clearActiveAccount(): void {
+    activeUserId = null;
+    if (hasStorage()) {
+      try {
+        localStorage.removeItem("nutrilens_active_user_id");
+      } catch {
+        // ignore
+      }
     }
+  },
+
+  clearAll(): void {
+    this.clearActiveAccount();
   },
 };

@@ -46,9 +46,17 @@ export function rankRecipesForUser(recipes: Recipe[], context: UserMealContext):
     maxPrepMinutes = 30,
     preferredDiet = "both",
     selectedGoal = profile?.goal || "Maintenance",
-    allergies = profile?.extended_data?.allergies || [],
-    dislikedFoods = profile?.extended_data?.disliked_foods || [],
-    likedFoods = profile?.extended_data?.liked_foods || [],
+    allergies = (Array.isArray((profile?.extended_data as Record<string, unknown>)?.allergies)
+      ? ((profile?.extended_data as Record<string, unknown>).allergies as string[])
+      : context.allergies || []) as string[],
+    dislikedFoods = (Array.isArray(
+      (profile?.extended_data as Record<string, unknown>)?.disliked_foods,
+    )
+      ? ((profile?.extended_data as Record<string, unknown>).disliked_foods as string[])
+      : context.dislikedFoods || []) as string[],
+    likedFoods = (Array.isArray((profile?.extended_data as Record<string, unknown>)?.liked_foods)
+      ? ((profile?.extended_data as Record<string, unknown>).liked_foods as string[])
+      : context.likedFoods || []) as string[],
   } = context;
 
   const userGoal = (selectedGoal || profile?.goal || "Maintenance").toLowerCase();

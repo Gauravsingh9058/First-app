@@ -1,10 +1,12 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { LocalStore, LocalProfile } from "@/lib/local-store";
 import { supabase } from "@/integrations/supabase/client";
 import { AuroraProfileScreen } from "@/components/AuroraProfileScreen";
+import { saveOnboarding } from "@/lib/profile.functions";
 import {
   requestNutriLensNotificationPermission,
   saveNotificationPreferences,
@@ -228,6 +230,7 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
 
 export function CalAiOnboarding() {
   const navigate = useNavigate();
+  const saveOnboardingFn = useServerFn(saveOnboarding);
 
   // Step Counter (1 to 23)
   const [step, setStep] = useState(1);
@@ -435,6 +438,50 @@ export function CalAiOnboarding() {
 
   const handleFinishOnboarding = async () => {
     const calculatedAge = Math.max(13, 2026 - birthYear);
+
+    // Map activity to database enum
+    const validActivity =
+      workouts === "6+" ? "very_active" : workouts === "3-5" ? "moderate" : "light";
+
+    // Map goal to database enum
+    const validGoal =
+      goal === "lose" ? "fat_loss" : goal === "gain" ? "muscle_gain" : "maintenance";
+
+    // Map diet to database enum
+    const dLower = diet.toLowerCase();
+    let validDiet: "vegetarian" | "vegan" | "non_veg" | "jain" | "keto" | "high_protein" =
+      "vegetarian";
+    if (dLower.includes("vegan")) validDiet = "vegan";
+    else if (dLower.includes("keto")) validDiet = "keto";
+    else if (dLower.includes("jain")) validDiet = "jain";
+    else if (dLower.includes("pescatarian") || dLower.includes("paleo") || dLower.includes("meat"))
+      validDiet = "non_veg";
+    else if (dLower.includes("high_protein") || dLower.includes("protein"))
+      validDiet = "high_protein";
+    else if (dLower.includes("veg")) validDiet = "vegetarian";
+    else validDiet = "non_veg";
+
+    const extendedData = {
+      workouts_per_week: workouts,
+      discovery_source: hearAbout,
+      has_trainer: hasTrainer,
+      weekly_rate_kg: weeklyRateKg,
+      obstacle,
+      accomplishment,
+      notifications_allowed: notificationsAllowed,
+      birth_month: birthMonth,
+      birth_day: birthDay,
+      birth_year: birthYear,
+      tried_other_apps: triedOtherApps,
+      height_unit: heightUnit,
+      weight_unit: weightUnit,
+      carbs_g: plan.carbsG,
+      fat_g: plan.fatsG,
+      daily_steps: 8000,
+      water_goal_l: 3.5,
+      goal_timeline: plan.monthsText,
+    };
+
     const profileData: LocalProfile = {
       display_name: currentProfile?.display_name || "NutriLens User",
       gender: sex,
@@ -442,64 +489,51 @@ export function CalAiOnboarding() {
       height_cm: heightCm,
       weight_kg: weightKg,
       goal_weight_kg: desiredWeightKg,
-      activity: workouts === "6+" ? "very_active" : workouts === "3-5" ? "moderate" : "light",
-      goal: goal === "lose" ? "fat_loss" : goal === "gain" ? "muscle_gain" : "maintenance",
-      diet: diet.toLowerCase().replace(/\s+/g, "_"),
+      activity: validActivity,
+      goal: validGoal,
+      diet: validDiet,
       daily_calorie_target: plan.targetCalories,
       protein_target_g: plan.proteinG,
       water_target_glasses: 8,
+      water_goal_l: 3.5,
       onboarded: true,
       mobile_verified: true,
-      extended_data: {
-        workouts_per_week: workouts,
-        discovery_source: hearAbout,
-        has_trainer: hasTrainer,
-        weekly_rate_kg: weeklyRateKg,
-        obstacle,
-        accomplishment,
-        notifications_allowed: notificationsAllowed,
-        birth_month: birthMonth,
-        birth_day: birthDay,
-        birth_year: birthYear,
-        tried_other_apps: triedOtherApps,
-        height_unit: heightUnit,
-        weight_unit: weightUnit,
-        carbs_g: plan.carbsG,
-        fat_g: plan.fatsG,
-        daily_steps: 8000,
-        water_goal_l: 3.5,
-        goal_timeline: plan.monthsText,
-      },
+      extended_data: extendedData,
     };
 
-    LocalStore.saveProfile(profileData);
-
+    // 1. First persist to server Supabase
     try {
       const { data: sessData } = await supabase.auth.getSession();
-      if (sessData.session?.user?.id) {
-        await supabase.from("profiles").upsert({
-          user_id: sessData.session.user.id,
-          display_name: profileData.display_name,
-          gender: profileData.gender,
-          age: profileData.age,
-          height_cm: profileData.height_cm,
-          weight_kg: profileData.weight_kg,
-          goal_weight_kg: profileData.goal_weight_kg,
-          activity: profileData.activity,
-          goal: profileData.goal,
-          diet: profileData.diet,
-          daily_calorie_target: profileData.daily_calorie_target,
-          protein_target_g: profileData.protein_target_g,
-          onboarded: true,
+      const userId = sessData.session?.user?.id;
+      if (userId) {
+        profileData.user_id = userId;
+        LocalStore.setAccount(userId);
+
+        await saveOnboardingFn({
+          data: {
+            display_name: profileData.display_name,
+            gender: profileData.gender,
+            age: profileData.age,
+            height_cm: profileData.height_cm,
+            weight_kg: profileData.weight_kg,
+            goal_weight_kg: profileData.goal_weight_kg,
+            activity: validActivity,
+            goal: validGoal,
+            diet: validDiet,
+            flags: [],
+            extended_data: extendedData,
+          },
         });
       }
-    } catch {
-      // ignore guest/offline mode error
+    } catch (err) {
+      console.warn("[handleFinishOnboarding] Server save error:", err);
     }
 
+    // 2. Save to account-scoped local store
+    LocalStore.saveProfile(profileData);
     setIsEditingSetup(false);
     setCurrentProfile(LocalStore.getProfile());
-    toast.success("🎉 Profile updated successfully! Welcome to NutriLens");
+    toast.success("🎉 Profile setup complete! Welcome to NutriLens");
     navigate({ to: "/home", replace: true });
   };
 
@@ -548,7 +582,8 @@ export function CalAiOnboarding() {
     return (
       <div className="min-h-screen bg-background text-foreground px-4 py-6">
         <AuroraProfileScreen
-          profile={currentProfile}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          profile={currentProfile as any}
           computedAge={age}
           computedBMI={bmi}
           computedBMR={bmr}
@@ -556,8 +591,9 @@ export function CalAiOnboarding() {
           computedTargets={{
             calories: currentProfile.daily_calorie_target || 2000,
             protein: currentProfile.protein_target_g || 120,
-            carbs: (currentProfile.extended_data?.carbs_g as number) || 220,
-            fat: (currentProfile.extended_data?.fat_g as number) || 60,
+            carbs:
+              ((currentProfile.extended_data as Record<string, unknown>)?.carbs_g as number) || 220,
+            fat: ((currentProfile.extended_data as Record<string, unknown>)?.fat_g as number) || 60,
             waterGlasses: currentProfile.water_target_glasses || 8,
           }}
           bmiCategory={bmiCat}

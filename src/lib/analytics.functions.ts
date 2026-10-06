@@ -20,7 +20,9 @@ export const getToday = createServerFn({ method: "POST" })
         supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(),
         supabase
           .from("meals")
-          .select("id,name,eaten_at,calories,protein_g,carbs_g,fat_g")
+          .select(
+            "id,name,eaten_at,calories,protein_g,carbs_g,fat_g,fiber_g,sugar_g,sodium_mg,serving_desc",
+          )
           .eq("user_id", userId)
           .eq("eaten_on", day)
           .order("eaten_at", { ascending: false }),
