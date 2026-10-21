@@ -20,11 +20,6 @@ dist-ssr
 .wrangler/
 .dev.vars
 
-# Vercel
-.vercel
-.vercel/
-
-
 # Environment
 .env
 
