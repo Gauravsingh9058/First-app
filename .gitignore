@@ -20,6 +20,10 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Vercel
+.vercel
+.vercel/
+
 # Environment
 .env
 
@@ -39,3 +43,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Android
+.gradle/
+**/build/
+android/.gradle/
+android/app/build/
+

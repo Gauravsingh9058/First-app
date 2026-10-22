@@ -49,7 +49,7 @@ export interface AIRecipeFunctionResult {
 }
 
 export const generateAIRecipes = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => RecipeGenInput.parse(data))
+  .validator((data: unknown) => RecipeGenInput.parse(data))
   .handler(async ({ data }): Promise<AIRecipeFunctionResult> => {
     const apiKey = getGeminiApiKey();
 

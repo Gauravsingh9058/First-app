@@ -5,7 +5,7 @@ import { RDA, DEFICIENCY_CUTOFF } from "./nutrition";
 
 export const getToday = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ day: z.string().optional() }).optional().parse(d))
+  .validator((d: unknown) => z.object({ day: z.string().optional() }).optional().parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const day = data?.day || new Date().toISOString().slice(0, 10);
@@ -47,7 +47,7 @@ export const getToday = createServerFn({ method: "POST" })
 
 export const getMacroTrend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ days: z.number().int().min(7).max(90).default(30) }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -70,7 +70,7 @@ export const getMacroTrend = createServerFn({ method: "POST" })
 
 export const getMicroTrend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ days: z.number().int().min(7).max(90).default(30) }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -110,7 +110,7 @@ export const getMicroTrend = createServerFn({ method: "POST" })
 
 export const getCalendarRange = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ days: z.number().int().min(1).max(3650).default(365) }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -133,7 +133,7 @@ export const getCalendarRange = createServerFn({ method: "POST" })
 
 export const getDay = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ day: z.string() }).parse(d))
+  .validator((d: unknown) => z.object({ day: z.string() }).parse(d))
   .handler(async ({ data, context }) => {
     try {
       const [{ data: rollup }, { data: meals }, { data: profile }] = await Promise.all([
@@ -168,7 +168,7 @@ export const getDay = createServerFn({ method: "POST" })
 
 export const getWeightTrend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ days: z.number().int().min(7).max(365).default(60) }).parse(d),
   )
   .handler(async ({ data, context }) => {

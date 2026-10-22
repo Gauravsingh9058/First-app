@@ -148,7 +148,7 @@ async function syncDailyRollup(supabase: any, userId: string, day: string) {
 
 export const logMeal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => MealInput.parse(d))
+  .validator((d: unknown) => MealInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const eatenAt = data.eaten_at ?? new Date().toISOString();
@@ -225,7 +225,7 @@ export const logMeal = createServerFn({ method: "POST" })
 
 export const deleteMeal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid().or(z.string()) }).parse(d))
+  .validator((d: unknown) => z.object({ id: z.string().uuid().or(z.string()) }).parse(d))
   .handler(async ({ data, context }) => {
     try {
       if (data.id.startsWith("local-")) return { ok: true, localFallback: true };
@@ -249,7 +249,7 @@ export const deleteMeal = createServerFn({ method: "POST" })
 
 export const listMealsOnDay = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ day: z.string() }).parse(d))
+  .validator((d: unknown) => z.object({ day: z.string() }).parse(d))
   .handler(async ({ data, context }) => {
     try {
       const { data: meals, error } = await context.supabase

@@ -108,12 +108,13 @@ export function getGeminiApiKey(): string | null {
     }
   }
 
-  const envKey = process.env.GEMINI_API_KEY;
+  const envKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
   if (envKey && typeof envKey === "string") {
     const val = envKey.trim();
     if (val && !val.startsWith("MY_GEMINI_") && val !== "your_api_key_here") {
       return val;
     }
   }
+
   return null;
 }

@@ -107,7 +107,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/cf610255-26a1-47ec-9738-03693307e57e",
       },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "alternate icon", type: "image/x-icon", href: "/favicon.ico" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

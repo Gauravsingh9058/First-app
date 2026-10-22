@@ -52,7 +52,7 @@ const OnboardInput = z.object({
 
 export const saveOnboarding = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => OnboardInput.parse(d))
+  .validator((d: unknown) => OnboardInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     // Mifflin-St Jeor BMR
@@ -157,7 +157,7 @@ export const saveOnboarding = createServerFn({ method: "POST" })
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         water_goal_l: z.number().optional(),
@@ -202,7 +202,7 @@ export const updateProfile = createServerFn({ method: "POST" })
 
 export const addWater = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({ glasses: z.number().min(-50).max(100).default(1), day: z.string().optional() })
       .parse(d),
@@ -224,7 +224,7 @@ export const addWater = createServerFn({ method: "POST" })
 
 export const logWeight = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ weight_kg: z.number().min(25).max(400), day: z.string().optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -245,7 +245,7 @@ export const logWeight = createServerFn({ method: "POST" })
 
 export const logSteps = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         steps: z.number().int().min(0).max(200000),
