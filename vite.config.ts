@@ -7,6 +7,11 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  vite: {
+    server: {
+      port: 5173,
+    },
+  },
   // Scan and meal generation use TanStack Start API routes. Keep a server build
   // enabled in production so /api/scan, /api/barcode and /api/generate-meal
   // are not replaced by the static application shell.
